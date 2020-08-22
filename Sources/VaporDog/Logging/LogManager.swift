@@ -2,13 +2,15 @@ import Foundation
 
 final class LogManager {
     
-    var logCountMin = 10
-    private var storedLogs = [LogItem]()
     private let networkManager: LogNetworkManager
-    private let timer = RepeatingTimer(timeInterval: 5)
+    private(set) var storedLogs = [LogItem]()
+    private let timer: RepeatingTimer
+    var logCountMin = 10
     
-    init(networkManager: LogNetworkManager) {
+    init(networkManager: LogNetworkManager, logCountMin: Int = 10, timeout: Double = 5) {
         self.networkManager = networkManager
+        self.logCountMin = logCountMin
+        self.timer = RepeatingTimer(timeInterval: timeout)
         
         configureTimeoutTimer()
     }

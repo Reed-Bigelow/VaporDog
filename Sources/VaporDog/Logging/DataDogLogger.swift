@@ -35,23 +35,32 @@ public struct DataDogLogger: LogHandler {
             return
         }
         
-        let item = createLogItem(message: message, metadata: metadata)
+        let item = Self.createLogItem(level: level, message: message, metadata: metadata)
         logManager.add(logItem: item)
     }
     
-    private func createLogItem(message: Logger.Message, metadata: Logger.Metadata?) -> LogItem {
+    internal static func createLogItem(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?) -> LogItem {
         let mappedMetadata = metadata?
             .compactMap { $0 }
             .reduce(into: [String: Any](), { acc, item in
-                if let intValue = Int(item.value.description) {
-                    acc[item.key] = intValue
-                } else if let doubleValue = Double(item.value.description) {
-                    acc[item.key] = doubleValue
-                } else {
-                    acc[item.key] = item.value.description
-                }
+                acc[item.key] = Self.convert(data: item.value.data)
             })
         
-        return LogItem(message: message.description, metadata: mappedMetadata ?? [:], staus: logLevel.rawValue)
+        return LogItem(message: message.description, metadata: mappedMetadata ?? [:], status: level.rawValue)
     }
+    
+    internal static func convert(data: Any) -> Any? {
+        if let string = data as? String {
+            return Int(string) ?? Double(string) ?? string
+        } else if let array = data as? [Any] {
+            return array.map { convert(data: $0) }
+        } else if let dictionary = data as? [String: Any] {
+            return dictionary.reduce(into: [String: Any]()) { acc, item in
+                acc[item.key] = convert(data: item.value)
+            }
+        }
+            
+        return data
+    }
+
 }

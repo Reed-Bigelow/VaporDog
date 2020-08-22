@@ -1,6 +1,6 @@
 import Foundation
 
-final class LogNetworkManager {
+class LogNetworkManager {
     
     private let apiKey: String
     private let source: String
@@ -25,7 +25,7 @@ final class LogNetworkManager {
             var tempParameters = [String: Any]()
             tempParameters["message"] = log.message
             tempParameters["metadata"] = log.metadata
-            tempParameters["status"] = log.staus
+            tempParameters["status"] = log.status
             return tempParameters
         }
         
@@ -36,7 +36,9 @@ final class LogNetworkManager {
                 return
             }
             
+            #if DEBUG
             print(urlResponse.statusCode == 200 ? "Logs Sent" : "Failed to send logs")
+            #endif
         }
         
         task.resume()
