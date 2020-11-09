@@ -1,16 +1,21 @@
 import Foundation
+import Vapor
+import NIO
 
 final class LogManager {
     
     private let networkManager: LogNetworkManager
     private(set) var storedLogs = [LogItem]()
-    private let timer: RepeatingTimer
+    private var task: RepeatedTask?
+    private let eventLoopGroup: EventLoopGroup
+    private let timeout: Int64
     var logCountMin = 10
     
-    init(networkManager: LogNetworkManager, logCountMin: Int = 10, timeout: Double = 5) {
+    init(networkManager: LogNetworkManager, logCountMin: Int = 10, timeout: Int64 = 5, eventLoopGroup: EventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)) {
         self.networkManager = networkManager
         self.logCountMin = logCountMin
-        self.timer = RepeatingTimer(timeInterval: timeout)
+        self.timeout = timeout
+        self.eventLoopGroup = eventLoopGroup
         
         configureTimeoutTimer()
     }
@@ -20,21 +25,20 @@ final class LogManager {
         
         if storedLogs.count >= logCountMin {
             sendLogs()
-            timer.reset()
         }
     }
     
     private func configureTimeoutTimer() {
-        timer.eventHandler = { [weak self] in
+        task?.cancel()
+        task = nil
+        task = eventLoopGroup.next().scheduleRepeatedTask(initialDelay: .seconds(timeout), delay: .seconds(timeout), { [weak self] _ in
             guard let self = self,
                   !self.storedLogs.isEmpty else {
                 return
             }
             
             self.sendLogs()
-        }
-        
-        timer.resume()
+        })
     }
     
     private func sendLogs() {

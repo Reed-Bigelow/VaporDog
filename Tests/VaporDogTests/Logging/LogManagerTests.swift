@@ -26,7 +26,7 @@ final class LogManagerTests: XCTestCase {
         let expect = expectation(description: "Send items after 1 second timeout")
         mockLogNetworkManager.sendExpectation = expect
         
-        wait(for: [expect], timeout: 1)
+        wait(for: [expect], timeout: 2)
         XCTAssertEqual(mockLogNetworkManager.spyLogsToSend?.count, 5)
     }
     
@@ -53,7 +53,7 @@ final class LogManagerTests: XCTestCase {
         let expect = expectation(description: "Send items after 1 second timeout")
         mockLogNetworkManager.sendExpectation = expect
         
-        wait(for: [expect], timeout: 1)
+        wait(for: [expect], timeout: 2)
         XCTAssertEqual(mockLogNetworkManager.spyLogsToSend?.count, 5)
         XCTAssertEqual(manager.storedLogs.count, 0)
     }
