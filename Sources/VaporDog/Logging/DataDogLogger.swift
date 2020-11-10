@@ -6,7 +6,7 @@ public struct DataDogLogger: LogHandler {
     private static let overrideLock = Lock()
     private static var overrideLogLevel: Logger.Level? = nil
     public var metadata: Logger.Metadata = [:]
-    public var logLevel: Logger.Level = .warning
+    public var logLevel: Logger.Level = .debug
     
     public var logCountSendMin: Int {
         get {
@@ -26,8 +26,8 @@ public struct DataDogLogger: LogHandler {
         }
     }
     
-    public init(apiKey: String, source: String, service: String, hostname: String) {
-        self.logManager = LogManager(networkManager: LogNetworkManager(apiKey: apiKey, source: source, service: service, hostname: hostname))
+    public init(apiKey: String, source: String, service: String, hostname: String, tags: [String]? = nil) {
+        self.logManager = LogManager(networkManager: LogNetworkManager(apiKey: apiKey, source: source, service: service, hostname: hostname, tags: tags))
     }
     
     public func log(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?, file: String, function: String, line: UInt) {
@@ -35,18 +35,19 @@ public struct DataDogLogger: LogHandler {
             return
         }
         
-        let item = Self.createLogItem(level: level, message: message, metadata: metadata)
+        let tags = (metadata?["tags"]?.data as? [Logger.MetadataValue.StringLiteralType])?.compactMap { $0 }
+        let item = Self.createLogItem(level: level, message: message, metadata: metadata, tags: tags)
         logManager.add(logItem: item)
     }
     
-    internal static func createLogItem(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?) -> LogItem {
+    internal static func createLogItem(level: Logger.Level, message: Logger.Message, metadata: Logger.Metadata?, tags: [String]?) -> LogItem {
         let mappedMetadata = metadata?
             .compactMap { $0 }
             .reduce(into: [String: Any](), { acc, item in
                 acc[item.key] = Self.convert(data: item.value.data)
             })
         
-        return LogItem(message: message.description, metadata: mappedMetadata ?? [:], status: level.rawValue)
+        return LogItem(message: message.description, metadata: mappedMetadata ?? [:], status: level.rawValue, tags: tags)
     }
     
     internal static func convert(data: Any) -> Any? {

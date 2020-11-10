@@ -9,14 +9,16 @@ class LogNetworkManager {
     private let source: String
     private let service: String
     private let hostname: String
+    private let tags: [String]?
     private let operationQueue = OperationQueue()
     private lazy var session = URLSession(configuration: .default, delegate: nil, delegateQueue: operationQueue)
     
-    init(apiKey: String, source: String, service: String, hostname: String) {
+    init(apiKey: String, source: String, service: String, hostname: String, tags: [String]?) {
         self.apiKey = apiKey
         self.source = source
         self.service = service
         self.hostname = hostname
+        self.tags = tags
     }
     
     func send(logs: [LogItem]) {
@@ -29,6 +31,7 @@ class LogNetworkManager {
             tempParameters["message"] = log.message
             tempParameters["metadata"] = log.metadata
             tempParameters["status"] = log.status
+            tempParameters["ddtags"] = [tags, log.tags].compactMap ({ $0 }).reduce([], +).joined(separator: ",")
             return tempParameters
         }
         

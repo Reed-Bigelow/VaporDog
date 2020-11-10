@@ -1,11 +1,17 @@
 import Foundation
 import XCTest
+import Logging
 @testable import VaporDog
 
 final class DataDogLoggerTests: XCTestCase {
     
     func testCreateLogItem() {
-        let item = DataDogLogger.createLogItem(level: .error, message: "This is a test message", metadata: ["data_int": .string("10"), "data_double": .string("10.5"), "data_string": .string("test_string")])
+        let item = DataDogLogger.createLogItem(level: .error,
+                                               message: "This is a test message",
+                                               metadata: ["data_int": .string("10"),
+                                                          "data_double": .string("10.5"),
+                                                          "data_string": .string("test_string")],
+                                               tags: nil)
         XCTAssertEqual(item.message, "This is a test message")
         XCTAssertEqual(item.status, "error")
         XCTAssertEqual(item.metadata["data_int"] as? Int, 10)
@@ -14,10 +20,12 @@ final class DataDogLoggerTests: XCTestCase {
     }
     
     func testCreateLogItemWithNestedMetadata() throws {
-        let item = DataDogLogger.createLogItem(level: .error, message: "This is a test message", metadata: ["data_int": .string("10"),
-                                                                                                            "data_double": .string("10.5"),
-                                                                                                            "data_string": .string("test_string"),
-                                                                                                            "nested_data": .dictionary(["first_level": .string("first_level_string")])])
+        let item = DataDogLogger.createLogItem(level: .error, message: "This is a test message",
+                                               metadata: ["data_int": .string("10"),
+                                                          "data_double": .string("10.5"),
+                                                          "data_string": .string("test_string"),
+                                                          "nested_data": .dictionary(["first_level": .string("first_level_string")])],
+                                               tags: nil)
         XCTAssertEqual(item.message, "This is a test message")
         XCTAssertEqual(item.status, "error")
         XCTAssertEqual(item.metadata["data_int"] as? Int, 10)
@@ -36,7 +44,8 @@ final class DataDogLoggerTests: XCTestCase {
                                                                                                             "nested_data_2": .dictionary(["first_level": .dictionary(["second_level": .array([.string("1"),
                                                                                                                                                                                               .string("2"),
                                                                                                                                                                                               .string("3")])
-                                                                                                            ])])])
+                                                                                                            ])])],
+                                               tags: nil)
         XCTAssertEqual(item.message, "This is a test message")
         XCTAssertEqual(item.status, "error")
         XCTAssertEqual(item.metadata["data_int"] as? Int, 10)
@@ -56,31 +65,31 @@ final class DataDogLoggerTests: XCTestCase {
     }
     
     func testCreateLogItemWithSuperDeepNestedMetadata() throws {
-        let item = DataDogLogger.createLogItem(level: .error, message: "This is a test message", metadata: ["nested_data": .dictionary(["first_level":
-                                                                                                                                            .dictionary(["second_level_array":
-                                                                                                                                                            .array([.string("1"),
-                                                                                                                                                                    .string("2"),
-                                                                                                                                                                    .string("3")]),
-                                                                                                                                                         "second_level_dictionary": .dictionary([
-                                                                                                                                                            "data_int": .string("10"),
-                                                                                                                                                            "data_double": .string("10.5"),
-                                                                                                                                                            "data_string": .string("test_string"),
-                                                                                                                                                            "third_level_dictionary": .dictionary([
-                                                                                                                                                                "data_int": .string("10"),
-                                                                                                                                                                "data_double": .string("10.5"),
-                                                                                                                                                                "data_string": .string("test_string"),
-                                                                                                                                                                "fourth_level_dictionary": .dictionary([
-                                                                                                                                                                    "data_int": .string("10"),
-                                                                                                                                                                    "data_double": .string("10.5"),
-                                                                                                                                                                    "data_string": .string("test_string"),
-                                                                                                                                                                    ])
-                                                                                                                                                                ])
-                                                                                                                                                            ])
-                                                                                                                                                        ])
-                                                                                                                                                    ])
-                                                                                                                                                ])
-                                                                                                                                                        
+        let metadata:  Logger.Metadata? = ["nested_data": .dictionary(["first_level":
+                                                                        .dictionary(["second_level_array":
+                                                                                        .array([.string("1"),
+                                                                                                .string("2"),
+                                                                                                .string("3")]),
+                                                                                     "second_level_dictionary": .dictionary([
+                                                                                        "data_int": .string("10"),
+                                                                                        "data_double": .string("10.5"),
+                                                                                        "data_string": .string("test_string"),
+                                                                                        "third_level_dictionary": .dictionary([
+                                                                                            "data_int": .string("10"),
+                                                                                            "data_double": .string("10.5"),
+                                                                                            "data_string": .string("test_string"),
+                                                                                            "fourth_level_dictionary": .dictionary([
+                                                                                                "data_int": .string("10"),
+                                                                                                "data_double": .string("10.5"),
+                                                                                                "data_string": .string("test_string"),
+                                                                                                ])
+                                                                                            ])
+                                                                                        ])
+                                                                                    ])
+                                                                                ])]
         
+        
+        let item = DataDogLogger.createLogItem(level: .error, message: "This is a test message", metadata: metadata, tags: nil)
         let nestedData = try XCTUnwrap(item.metadata["nested_data"] as? [String: Any])
         
         let nestedDataLevel1 = try XCTUnwrap(nestedData["first_level"] as? [String: Any])

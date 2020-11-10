@@ -5,10 +5,10 @@ import XCTest
 final class LogManagerTests: XCTestCase {
     
     func testSendLogsAtMinimum() {
-        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "")
+        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "", tags: nil)
         let manager = LogManager(networkManager: mockLogNetworkManager)
         (0..<10).forEach { index in
-            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error")
+            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error", tags: nil)
             manager.add(logItem: item)
         }
         
@@ -16,10 +16,10 @@ final class LogManagerTests: XCTestCase {
     }
     
     func testSendLogsBelowMinimumTimeout() {
-        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "")
+        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "", tags: nil)
         let manager = LogManager(networkManager: mockLogNetworkManager, timeout: 1)
         (0..<5).forEach { index in
-            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error")
+            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error", tags: nil)
             manager.add(logItem: item)
         }
         
@@ -31,10 +31,10 @@ final class LogManagerTests: XCTestCase {
     }
     
     func testLogsGetClearedAfterSend() {
-        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "")
+        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "", tags: nil)
         let manager = LogManager(networkManager: mockLogNetworkManager)
         (0..<10).forEach { index in
-            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error")
+            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error", tags: nil)
             manager.add(logItem: item)
         }
         
@@ -43,10 +43,10 @@ final class LogManagerTests: XCTestCase {
     }
     
     func testLogsGetClearedAfterSendBelowMinimumTimeout() {
-        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "")
+        let mockLogNetworkManager = MockLogNetworkManager(apiKey: "", source: "", service: "", hostname: "", tags: nil)
         let manager = LogManager(networkManager: mockLogNetworkManager, timeout: 1)
         (0..<5).forEach { index in
-            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error")
+            let item = LogItem(message: "test message \(index)", metadata: [:], status: "error", tags: nil)
             manager.add(logItem: item)
         }
         
